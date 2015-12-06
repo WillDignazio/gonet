@@ -34,6 +34,8 @@ type IPv4Header interface {
 	SourceAddress() uint32
 	DestinationAddress() uint32
 	Options() uint32 // XXX Preserve byte order
+
+	CalculateChecksum() uint16
 } 
 
 const IPV4_BLOCK_SIZE = 64 * 1024

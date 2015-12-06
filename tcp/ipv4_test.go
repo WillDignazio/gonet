@@ -1,7 +1,6 @@
 package tcp
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -35,29 +34,16 @@ func TestParseIPv4Packet(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	onesZero := ^uint16(0)
-	fmt.Println("Complement 0: %d", onesZero)
-
-	carry := uint32(0x0A00) + uint32(onesZero)
-	fmt.Println("Carry before carry: %d", carry)
-
-	carrybit := ((carry & 0x10000) >> 16)
-	fmt.Println("Carry value: %d", carrybit)
-
-	carriedSum := ^uint16(carry & 0xFFFF) + uint16((carry & 0x10000) >> 16)
-	fmt.Println("Carried Ones Sum: %d", carriedSum)
-	
-
-	fmt.Println("Checksum: %d", CalculateHeaderChecksum(packet))
-
-	assert.Equal(t, uint8(4), packet.Version(), "Version Incorrect")
-	assert.Equal(t, uint8(5), packet.IHL(), "Header Length Incorrect")
-	assert.Equal(t, uint8(LowDelay), packet.TypeOfService(), "TypeOfService Incorrect")
-	assert.Equal(t, uint16(52), packet.TotalLength(), "TotalLength of packet Incorrect")
-	assert.Equal(t, uint16(63040), packet.Identification(), "Identification Sequence # Incorrect")
-	assert.Equal(t, uint8(DontFragment), packet.Flags(), "Packet Flags Incorrect")
-	assert.Equal(t, uint16(16384), packet.FragmentOffset(), "Fragment Offset Incorrect")
-	assert.Equal(t, uint8(64), packet.TimeToLive(), "Time to Live Incorrect")
-	assert.Equal(t, uint8(6), packet.Protocol(), "IP Protocol incorrect")
-	assert.Equal(t, uint16(0), packet.HeaderChecksum(), "Header Checksum Incorrect")
+	assert.Equal(t, uint8(4), packet.Version(), "Version incorrect")
+	assert.Equal(t, uint8(5), packet.IHL(), "Header length incorrect")
+	assert.Equal(t, uint8(LowDelay), packet.TypeOfService(), "TypeOfService incorrect")
+	assert.Equal(t, uint16(52), packet.TotalLength(), "TotalLength of packet incorrect")
+	assert.Equal(t, uint16(63040), packet.Identification(), "Identification sequence # incorrect")
+	assert.Equal(t, uint8(DontFragment), packet.Flags(), "Packet flags incorrect")
+	assert.Equal(t, uint16(0), packet.FragmentOffset(), "Fragment offset incorrect")
+	assert.Equal(t, uint8(64), packet.TimeToLive(), "Time to live incorrect")
+	assert.Equal(t, uint8(6), packet.Protocol(), "IP protocol number incorrect")
+	assert.Equal(t, uint16(0xFDCB), packet.HeaderChecksum(), "Header checksum incorrect")
+	assert.Equal(t, uint16(0xFDCB), packet.CalculateChecksum(), "Calculated checksum incorrect")
+	assert.Equal(t, true, packet.Valid(), "Invalid checksum found for packet")
 }
