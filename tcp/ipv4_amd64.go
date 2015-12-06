@@ -16,6 +16,14 @@ func (h *IPv4Packet) TypeOfService() uint8 {
 	return h.header[1]
 }
 
+func (h *IPv4Packet) DifferentiatedServicesCodePoint() uint8 {
+	return (h.header[1] >> 2) & 0x3F
+}
+
+func (h *IPv4Packet) ExplicitCongestionNotification() uint8 {
+	return h.header[1] & 0x03
+}
+
 func (h *IPv4Packet) TotalLength() uint16 {
 	return binary.BigEndian.Uint16(h.header[2:4])
 }
@@ -74,11 +82,9 @@ func onesComplementSum(data []byte, base uint16) uint16 {
 }
 
 func CalculateHeaderChecksum(packet *IPv4Packet) uint16 {
-	var hlen uint8 = packet.IHL() * 8 // 32 bit words / 4 bytes per word
+	var hlen uint8 = packet.IHL() * 4 // 32 bit words / 4 bytes per word
 	var checksum uint16
-
 	checksum = onesComplementSum(packet.header[:10], 0)
 	checksum = onesComplementSum(packet.header[12:hlen], checksum)
-
 	return ^checksum
 }

@@ -59,5 +59,5 @@ func TestParseIPv4Packet(t *testing.T) {
 	assert.Equal(t, uint16(16384), packet.FragmentOffset(), "Fragment Offset Incorrect")
 	assert.Equal(t, uint8(64), packet.TimeToLive(), "Time to Live Incorrect")
 	assert.Equal(t, uint8(6), packet.Protocol(), "IP Protocol incorrect")
-	assert.Equal(t, uint16(0xFDCB), packet.HeaderChecksum(), "Header Checksum Incorrect")
+	assert.Equal(t, uint16(0), packet.HeaderChecksum(), "Header Checksum Incorrect")
 }

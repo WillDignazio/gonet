@@ -15,10 +15,15 @@ type IPv4Header interface {
 	IHL() uint8
 	TypeOfService() uint8 // XXX Bitfield to remain in network order
 	
-	// TOS -> DSCP in RFC 2474, support for DiffServ (Differentiated Services
-	// We're going to leave the original TypeOfService interface intact, and
-	// as they're shared bit positions.
+	// TOS -> DSCP in RFC 2474, support for DiffServ
+	// (Differentiated Services). We're going to leave the original
+	// TypeOfService interface intact, and as they're shared bit positions.
 	DifferentiatedServicesCodePoint() uint8
+
+	// TOS -> ECN defined in RFC 3168, allows end-to-end notification of
+	// network congestion without dropping packets.
+	ExplicitCongestionNotification() uint8
+
 	TotalLength() uint16
 	Identification() uint16
 	Flags() uint8
