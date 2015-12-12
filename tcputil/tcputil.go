@@ -1,7 +1,7 @@
 package main
 
 import (
-	"digitalbebop.net/tcp"
+	"digitalbebop.net/ip"
 	"fmt"
 )
 

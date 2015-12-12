@@ -7,6 +7,7 @@ package tcp
 import (
 	"errors"
 	"fmt"
+	"net"
 	"syscall"
 )
 
@@ -14,7 +15,7 @@ type IPv4Header interface {
 	Version() uint8
 	IHL() uint8
 	TypeOfService() uint8 // XXX Bitfield to remain in network order
-	
+
 	// TOS -> DSCP in RFC 2474, support for DiffServ
 	// (Differentiated Services). We're going to leave the original
 	// TypeOfService interface intact, and as they're shared bit positions.
@@ -31,15 +32,22 @@ type IPv4Header interface {
 	TimeToLive() uint8
 	Protocol() uint8
 	HeaderChecksum() uint16
-	SourceAddress() uint32
-	DestinationAddress() uint32
-	Options() uint32 // XXX Preserve byte order
+	SourceAddress() net.IP
+	DestinationAddress() net.IP
+	Options() []byte
 
 	CalculateChecksum() uint16
-} 
+}
 
-const IPV4_BLOCK_SIZE = 64 * 1024
-const IPV4_HEADER_LENGTH = 24 // 24 Octets
+type IPv4Packet struct {
+	header  []byte
+	data    []byte
+}
+
+var _ IPv4Header = (*IPv4Packet)(nil) // Enforce that we have an impl
+
+// Minimum size of the header
+const IPV4_HEADER_PREAMBLE_SIZE = 20
 
 // Bits 0-2:  Precedence.
 // Bit    3:  0 = Normal Delay,      1 = Low Delay.
@@ -85,7 +93,6 @@ const (
 	LowDelay        IPv4ServiceTypeMask = 1 << 4
 )
 
-
 // Flags:  3 bits
 //
 //   Various Control Flags.
@@ -106,26 +113,39 @@ const (
 	DontFragment  IPv4Flag = 1 << 1
 )
 
-// We want to do as little allocation or conversion work as possible, so we're
-// merely going to reference raw byte data that was provided from the socket.
-// The ipv4_<arch> files provide architecture dependent methods for on-the-fly
-// methods of conversion.
-type IPv4Packet struct {
-	header []byte
-	data   []byte
+func (h *IPv4Packet) Options() []byte {
+	ihl := h.IHL()
+	return h.header[IPV4_HEADER_PREAMBLE_SIZE:(ihl*4)]
 }
 
-var _ IPv4Header = (*IPv4Packet)(nil) // Enforce that we have an impl
+func (h *IPv4Packet) SourceAddress() net.IP {
+	return h.header[12:16]
+}
+
+func (h *IPv4Packet) DestinationAddress() net.IP {
+	return h.header[16:20]
+}
+
+
+// Don't want to waste time building and tearing down the packet objects
+// we're just going to extract it outright
+func extractIHL(data []byte) uint8 {
+	return data[0] & 0x0F
+}
 
 func parseIPv4Message(rawData []byte) (*IPv4Packet, error) {
 	rawDatalen := len(rawData)
-	if rawDatalen < IPV4_HEADER_LENGTH {
-		return nil, errors.New(fmt.Sprintf("Too small buffer size, can't parse message: %d of %d", rawDatalen, IPV4_HEADER_LENGTH))
+	if rawDatalen < IPV4_HEADER_PREAMBLE_SIZE {
+		msg := fmt.Sprintf("Too small buffer size, can't parse message: %d of %d",
+			rawDatalen, IPV4_HEADER_PREAMBLE_SIZE)
+		return nil, errors.New(msg)
 	}
 
+	ihl := extractIHL(rawData)
+	eoh := ihl * 4
 	packet := IPv4Packet{
-		header: rawData[0:IPV4_HEADER_LENGTH],
-		data:   rawData[IPV4_HEADER_LENGTH:],
+		header: rawData[0:eoh],
+		data: rawData[eoh:],
 	}
 
 	return &packet, nil
@@ -137,5 +157,12 @@ func OpenRawIPv4Socket() (int, error) {
 		return -1, err
 	}
 
+	// Configure the socket so that we must manually include the IP headers
+	err = syscall.SetsockoptInt(fd, 0, syscall.IP_HDRINCL, 1)
+	if err != nil {
+		return -1, err
+	}
+
 	return fd, nil
 }
+

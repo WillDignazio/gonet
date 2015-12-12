@@ -37,7 +37,7 @@ func (h *IPv4Packet) Flags() uint8 {
 }
 
 func (h *IPv4Packet) FragmentOffset() uint16 {
-	return binary.BigEndian.Uint16([]byte { h.header[6] & 0x1F, h.header[7] })
+	return binary.BigEndian.Uint16([]byte{h.header[6] & 0x1F, h.header[7]})
 }
 
 func (h *IPv4Packet) TimeToLive() uint8 {
@@ -52,28 +52,15 @@ func (h *IPv4Packet) HeaderChecksum() uint16 {
 	return binary.BigEndian.Uint16(h.header[10:12])
 }
 
-func (h *IPv4Packet) SourceAddress() uint32 {
-	return binary.BigEndian.Uint32(h.header[12:16])
-}
-
-func (h *IPv4Packet) DestinationAddress() uint32 {
-	return binary.BigEndian.Uint32(h.header[16:20])
-}
-
-// XXX Preserve byte order so we can use generic flags
-func (h *IPv4Packet) Options() uint32 {
-	return binary.LittleEndian.Uint32(h.header[20:24]) >> 8
-}
-
 func addOnesComplement(x uint16, y uint16) uint16 {
 	z := uint32(x) + uint32(y)
-	return uint16(z & 0xFFFF) + uint16((z & 0x10000) >> 16)
+	return uint16(z&0xFFFF) + uint16((z&0x10000)>>16)
 }
 
 func onesComplementSum(data []byte, base uint16) uint16 {
 	var sum uint16 = base
 	for idx := 0; idx < len(data); idx += 2 {
-		sum = addOnesComplement(sum, (uint16(data[idx]) << 8) | (uint16(data[idx+1])))
+		sum = addOnesComplement(sum, (uint16(data[idx])<<8)|(uint16(data[idx+1])))
 	}
 	return sum
 }
@@ -90,4 +77,4 @@ func (packet *IPv4Packet) Valid() bool {
 	var hlen uint8 = packet.IHL() * 4
 	chk := ^onesComplementSum(packet.header[:hlen], 0)
 	return chk == 0
-}	
+}
