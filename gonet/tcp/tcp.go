@@ -1,4 +1,4 @@
-package tcp
+package gonet
 
 type octet uint8
 

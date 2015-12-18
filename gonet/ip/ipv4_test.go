@@ -1,4 +1,4 @@
-package tcp
+package ip
 
 import (
 	"github.com/stretchr/testify/assert"

@@ -1,4 +1,4 @@
-package tcp
+package ip
 
 // Architecture dependent getters are provided in ipv4_<arch>, we only grab the
 // data stream in this file so we don't do uneccessary byte conversions or data
@@ -40,8 +40,8 @@ type IPv4Header interface {
 }
 
 type IPv4Packet struct {
-	header  []byte
-	data    []byte
+	header []byte
+	data   []byte
 }
 
 var _ IPv4Header = (*IPv4Packet)(nil) // Enforce that we have an impl
@@ -115,7 +115,7 @@ const (
 
 func (h *IPv4Packet) Options() []byte {
 	ihl := h.IHL()
-	return h.header[IPV4_HEADER_PREAMBLE_SIZE:(ihl*4)]
+	return h.header[IPV4_HEADER_PREAMBLE_SIZE:(ihl * 4)]
 }
 
 func (h *IPv4Packet) SourceAddress() net.IP {
@@ -125,7 +125,6 @@ func (h *IPv4Packet) SourceAddress() net.IP {
 func (h *IPv4Packet) DestinationAddress() net.IP {
 	return h.header[16:20]
 }
-
 
 // Don't want to waste time building and tearing down the packet objects
 // we're just going to extract it outright
@@ -145,7 +144,7 @@ func parseIPv4Message(rawData []byte) (*IPv4Packet, error) {
 	eoh := ihl * 4
 	packet := IPv4Packet{
 		header: rawData[0:eoh],
-		data: rawData[eoh:],
+		data:   rawData[eoh:],
 	}
 
 	return &packet, nil
@@ -165,4 +164,3 @@ func OpenRawIPv4Socket() (int, error) {
 
 	return fd, nil
 }
-
