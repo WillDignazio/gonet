@@ -18,12 +18,12 @@ import (
 //	Checksum:
 //	Source Address: 172.16.119.1
 //	Destination Address: 172.16.119.133
-var TEST_PACKET2 = []byte{
+var TEST_DATAGRAM2 = []byte{
 	0x48, 0x00, 0x02, 0x40, 0x00, 0x6F, 0x00, 0x00,
 	0x7B, 0x06, 0xF3, 0xA1, 0xAC, 0x10, 0x77, 0x01,
 	0xAC, 0x10, 0x77, 0x85, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	// Example packet from RFC791, page 38
+	// Example datagram from RFC791, page 38
 	// Data left out
 }
 
@@ -40,7 +40,7 @@ var TEST_PACKET2 = []byte{
 //	Checksum: 64971
 //	Source Address: 172.16.119.1
 //	Destination Address: 172.16.119.133
-var TEST_PACKET1 = []byte{
+var TEST_DATAGRAM1 = []byte{
 	0x45, 0x10, 0x00, 0x34, 0xF6, 0x40, 0x40, 0x00,
 	0x40, 0x06, 0xFD, 0xCB, 0xAC, 0x10, 0x77, 0x01,
 	0xAC, 0x10, 0x77, 0x85, 0xF5, 0x13, 0x00, 0x16,
@@ -50,46 +50,46 @@ var TEST_PACKET1 = []byte{
 	0x00, 0xDA, 0x02, 0x4D,
 }
 
-func TestParseIPv4Packet(t *testing.T) {
-	packet, err := parseIPv4Message(TEST_PACKET1)
+func TestParseIPv4Datagram(t *testing.T) {
+	datagram, err := ParseIPv4Datagram(TEST_DATAGRAM1)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	assert.Equal(t, uint8(4), packet.Version(), "Version incorrect")
-	assert.Equal(t, uint8(5), packet.IHL(), "Header length incorrect")
-	assert.Equal(t, uint8(LowDelay), packet.TypeOfService(), "TypeOfService incorrect")
-	assert.Equal(t, uint16(52), packet.TotalLength(), "TotalLength of packet incorrect")
-	assert.Equal(t, uint16(63040), packet.Identification(), "Identification sequence # incorrect")
-	assert.Equal(t, uint8(DontFragment), packet.Flags(), "Packet flags incorrect")
-	assert.Equal(t, uint16(0), packet.FragmentOffset(), "Fragment offset incorrect")
-	assert.Equal(t, uint8(64), packet.TimeToLive(), "Time to live incorrect")
-	assert.Equal(t, uint8(6), packet.Protocol(), "IP protocol number incorrect")
-	assert.Equal(t, uint16(0xFDCB), packet.HeaderChecksum(), "Header checksum incorrect")
-	assert.Equal(t, uint16(0xFDCB), packet.CalculateChecksum(), "Calculated checksum incorrect")
-	assert.Equal(t, true, packet.Valid(), "Invalid checksum found for packet")
-	assert.Equal(t, "172.16.119.1", packet.SourceAddress().String(), "Invalid source address")
-	assert.Equal(t, "172.16.119.133", packet.DestinationAddress().String(), "Invalid destination address")
+	assert.Equal(t, uint8(4), datagram.Version(), "Version incorrect")
+	assert.Equal(t, uint8(5), datagram.IHL(), "Header length incorrect")
+	assert.Equal(t, uint8(LowDelay), datagram.TypeOfService(), "TypeOfService incorrect")
+	assert.Equal(t, uint16(52), datagram.TotalLength(), "TotalLength of datagram incorrect")
+	assert.Equal(t, uint16(63040), datagram.Identification(), "Identification sequence # incorrect")
+	assert.Equal(t, uint8(DontFragment), datagram.Flags(), "Datagram flags incorrect")
+	assert.Equal(t, uint16(0), datagram.FragmentOffset(), "Fragment offset incorrect")
+	assert.Equal(t, uint8(64), datagram.TimeToLive(), "Time to live incorrect")
+	assert.Equal(t, uint8(6), datagram.Protocol(), "IP protocol number incorrect")
+	assert.Equal(t, uint16(0xFDCB), datagram.HeaderChecksum(), "Header checksum incorrect")
+	assert.Equal(t, uint16(0xFDCB), datagram.CalculateChecksum(), "Calculated checksum incorrect")
+	assert.Equal(t, true, datagram.Valid(), "Invalid checksum found for datagram")
+	assert.Equal(t, "172.16.119.1", datagram.SourceAddress().String(), "Invalid source address")
+	assert.Equal(t, "172.16.119.133", datagram.DestinationAddress().String(), "Invalid destination address")
 }
 
-func TestParseIPv4PacketWithOptions(t *testing.T) {
-	packet, err := parseIPv4Message(TEST_PACKET2)
+func TestParseIPv4DatagramWithOptions(t *testing.T) {
+	datagram, err := ParseIPv4Datagram(TEST_DATAGRAM2)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
-	assert.Equal(t, uint8(4), packet.Version(), "Version incorrect")
-	assert.Equal(t, uint8(8), packet.IHL(), "Header length incorrect")
-	assert.Equal(t, uint8(0), packet.TypeOfService(), "TypeOfService incorrect")
-	assert.Equal(t, uint16(576), packet.TotalLength(), "TotalLength of packet incorrect")
-	assert.Equal(t, uint16(111), packet.Identification(), "Identification sequence # incorrect")
-	assert.Equal(t, uint8(0), packet.Flags(), "Packet flags incorrect")
-	assert.Equal(t, uint16(0), packet.FragmentOffset(), "Fragment offset incorrect")
-	assert.Equal(t, uint8(123), packet.TimeToLive(), "Time to live incorrect")
-	assert.Equal(t, uint8(6), packet.Protocol(), "IP protocol number incorrect")
-	assert.Equal(t, uint16(0xF3A1), packet.HeaderChecksum(), "Header checksum incorrect")
-	assert.Equal(t, uint16(0xF3A1), packet.CalculateChecksum(), "Calculated checksum incorrect")
-	assert.Equal(t, true, packet.Valid(), "Invalid checksum found for packet")
-	assert.Equal(t, "172.16.119.1", packet.SourceAddress().String(), "Invalid source address")
-	assert.Equal(t, "172.16.119.133", packet.DestinationAddress().String(), "Invalid destination address")
+	assert.Equal(t, uint8(4), datagram.Version(), "Version incorrect")
+	assert.Equal(t, uint8(8), datagram.IHL(), "Header length incorrect")
+	assert.Equal(t, uint8(0), datagram.TypeOfService(), "TypeOfService incorrect")
+	assert.Equal(t, uint16(576), datagram.TotalLength(), "TotalLength of datagram incorrect")
+	assert.Equal(t, uint16(111), datagram.Identification(), "Identification sequence # incorrect")
+	assert.Equal(t, uint8(0), datagram.Flags(), "Datagram flags incorrect")
+	assert.Equal(t, uint16(0), datagram.FragmentOffset(), "Fragment offset incorrect")
+	assert.Equal(t, uint8(123), datagram.TimeToLive(), "Time to live incorrect")
+	assert.Equal(t, uint8(6), datagram.Protocol(), "IP protocol number incorrect")
+	assert.Equal(t, uint16(0xF3A1), datagram.HeaderChecksum(), "Header checksum incorrect")
+	assert.Equal(t, uint16(0xF3A1), datagram.CalculateChecksum(), "Calculated checksum incorrect")
+	assert.Equal(t, true, datagram.Valid(), "Invalid checksum found for datagram")
+	assert.Equal(t, "172.16.119.1", datagram.SourceAddress().String(), "Invalid source address")
+	assert.Equal(t, "172.16.119.133", datagram.DestinationAddress().String(), "Invalid destination address")
 }

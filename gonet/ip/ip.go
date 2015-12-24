@@ -1,9 +1,7 @@
 package ip
 
-const (
-	RawSocket = 0
-)
-
-type IPInterface struct {
-	baseType int
+type IPDatagram interface {
+	Header() []byte
+	Data() []byte
 }
+

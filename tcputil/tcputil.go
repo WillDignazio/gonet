@@ -1,26 +1,20 @@
 package main
 
 import (
-	"digitalbebop.net/gonet/ip"
+	"digitalbebop.net/gonet"
 	"fmt"
-	"syscall"
 )
 
 func main() {
-	sfd, err := ip.OpenRawIPv4Socket()
+	iface, err := gonet.OpenRawSocketInterface()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	var buff []byte = make([]byte, 1000)
-	var buff2 []byte = make([]byte, 1000)
+	t := gonet.NewGoNetConfig()
+	fmt.Println(t)
+	fmt.Println(t.GetInt("foo"))
 
-	read, _, _, _, err := syscall.Recvmsg(sfd, buff, buff2, 0)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Read %d bytes", read)
+	gonet.TestListen(*iface)
 }

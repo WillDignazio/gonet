@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"syscall"
 )
 
 type IPv4Header interface {
@@ -39,12 +38,46 @@ type IPv4Header interface {
 	CalculateChecksum() uint16
 }
 
-type IPv4Packet struct {
+type IPv4Datagram struct {
 	header []byte
 	data   []byte
 }
 
-var _ IPv4Header = (*IPv4Packet)(nil) // Enforce that we have an impl
+var _ IPDatagram = (*IPv4Datagram)(nil)
+var _ IPv4Header = (*IPv4Datagram)(nil)
+
+var fmtString string = `Packet {
+	Version: %v
+	IHL: %v
+	TypeOfService: %v
+	TotalLength: %v
+	Identification: %v
+	Flags: %v
+	FragmentOffset: %v
+	TimeToLive: %v
+	Protocol: %v
+	HeaderChecksum: %v
+	SourceAddress: %v
+	DestinationAddress: %v
+	Options: %v
+}`
+
+func (datagram *IPv4Datagram) String() string {
+	return fmt.Sprintf(fmtString,
+		datagram.Version(),
+		datagram.IHL(),
+		datagram.TypeOfService(),
+		datagram.TotalLength(),
+		datagram.Identification(),
+		datagram.Flags(),
+		datagram.FragmentOffset(),
+		datagram.TimeToLive(),
+		datagram.Protocol(),
+		datagram.HeaderChecksum(),
+		datagram.SourceAddress(),
+		datagram.DestinationAddress(),
+		datagram.Options())
+}
 
 // Minimum size of the header
 const IPV4_HEADER_PREAMBLE_SIZE = 20
@@ -113,16 +146,16 @@ const (
 	DontFragment  IPv4Flag = 1 << 1
 )
 
-func (h *IPv4Packet) Options() []byte {
+func (h *IPv4Datagram) Options() []byte {
 	ihl := h.IHL()
 	return h.header[IPV4_HEADER_PREAMBLE_SIZE:(ihl * 4)]
 }
 
-func (h *IPv4Packet) SourceAddress() net.IP {
+func (h *IPv4Datagram) SourceAddress() net.IP {
 	return h.header[12:16]
 }
 
-func (h *IPv4Packet) DestinationAddress() net.IP {
+func (h *IPv4Datagram) DestinationAddress() net.IP {
 	return h.header[16:20]
 }
 
@@ -132,7 +165,7 @@ func extractIHL(data []byte) uint8 {
 	return data[0] & 0x0F
 }
 
-func parseIPv4Message(rawData []byte) (*IPv4Packet, error) {
+func ParseIPv4Datagram(rawData []byte) (*IPv4Datagram, error) {
 	rawDatalen := len(rawData)
 	if rawDatalen < IPV4_HEADER_PREAMBLE_SIZE {
 		msg := fmt.Sprintf("Too small buffer size, can't parse message: %d of %d",
@@ -142,7 +175,7 @@ func parseIPv4Message(rawData []byte) (*IPv4Packet, error) {
 
 	ihl := extractIHL(rawData)
 	eoh := ihl * 4
-	packet := IPv4Packet{
+	packet := IPv4Datagram{
 		header: rawData[0:eoh],
 		data:   rawData[eoh:],
 	}
@@ -150,17 +183,10 @@ func parseIPv4Message(rawData []byte) (*IPv4Packet, error) {
 	return &packet, nil
 }
 
-func OpenRawIPv4Socket() (int, error) {
-	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_RAW, syscall.IPPROTO_TCP)
-	if err != nil {
-		return -1, err
-	}
+func (datagram *IPv4Datagram) Header() []byte {
+	return datagram.header
+}
 
-	// Configure the socket so that we must manually include the IP headers
-	err = syscall.SetsockoptInt(fd, 0, syscall.IP_HDRINCL, 1)
-	if err != nil {
-		return -1, err
-	}
-
-	return fd, nil
+func (datagram *IPv4Datagram) Data() []byte {
+	return datagram.data
 }
