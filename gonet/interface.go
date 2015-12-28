@@ -16,6 +16,7 @@ const (
 type GoNetInterface interface {
 	io.Reader
 	io.Writer
+	Name() string
 	Interface() net.Interface
 	GoNetInterfaceType() GoNetInterfaceType
 }

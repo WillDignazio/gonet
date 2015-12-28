@@ -14,7 +14,7 @@ func main() {
 
 	t := gonet.NewGoNetConfig()
 	fmt.Println(t)
-	fmt.Println(t.GetInt("foo"))
+	fmt.Println(t.GetInt("foo", 10))
 
 	gonet.TestListen(*iface)
 }

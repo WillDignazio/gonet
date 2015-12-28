@@ -6,7 +6,3 @@ const (
 	_GB_ = 1024 * _MB_
 )
 
-
-func MergeByteChannels(chs []<-chan []byte) (<-chan []byte) {
-	return nil
-}

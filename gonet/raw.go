@@ -5,10 +5,12 @@ import (
 	"digitalbebop.net/gonet/ip"
 	"net"
 	"os"
+	"sync"
 	"syscall"
 )
 
 type RawSocketInterface struct {
+	GoNetInterface
 	sockout       int
 	sockets       []int
 	baseInterface net.Interface
@@ -95,14 +97,45 @@ func rawSocketListener(sd int, errch chan<- error) (<-chan []byte, error) {
 	return ch, nil
 }
 
+func mergeChannels(cs ...<-chan []byte) <-chan []byte {
+	var wg sync.WaitGroup
+	out := make(chan []byte)
+	
+	output := func(c <-chan []byte) {
+		for n := range c {
+			out <- n
+		}
+		wg.Done()
+	}
+
+	wg.Add(len(cs))
+	for _, c := range cs {
+		go output(c)
+	}
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+
+	return out
+}
+
 func TestListen(iface RawSocketInterface) {
 	errs := make(chan error)
 
-	ch, err := rawSocketListener(iface.sockets[0], errs)
-	if err != nil {
-		fmt.Println("FOOOO: ", err)
-		return
+	channels := make([]<-chan []byte, len(iface.sockets))
+	for idx, val := range iface.sockets {
+		ch, err := rawSocketListener(val, errs)
+		if err != nil {
+			fmt.Println("BARRRRR", err)
+			return
+		}
+		fmt.Println("Created ", ch)
+		channels[idx] = ch
 	}
+
+	ch := mergeChannels(channels...)
 
 	for {
 		_, err := ip.ParseIPv4Datagram(<-ch)
