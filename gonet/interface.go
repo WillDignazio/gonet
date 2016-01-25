@@ -5,23 +5,23 @@ import (
 	"net"
 )
 
-type GoNetInterfaceType uint
+type GoNetGatewayType uint
 
 const (
-	Uninitialized GoNetInterfaceType = 0
+	Uninitialized GoNetGatewayType = 0
 	RawSocket     = iota
 	Virtual       = iota
 )
 
-type GoNetInterface interface {
+type GoNetGateway interface {
 	io.Reader
 	io.Writer
 	Name() string
 	Interface() net.Interface
-	GoNetInterfaceType() GoNetInterfaceType
+	GoNetGatewayType() GoNetGatewayType
 }
 
-func GoNetInterfaceTypeAsString(t GoNetInterfaceType) string {
+func GoNetGatewayTypeAsString(t GoNetGatewayType) string {
 	switch t {
 	case Uninitialized:
 		return "Uninitialized"

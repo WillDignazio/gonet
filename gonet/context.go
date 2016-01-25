@@ -7,16 +7,16 @@ import (
 
 type GoNetCtx struct {
 	rwlock *sync.RWMutex
-	interfaces map[string]GoNetInterface
+	interfaces map[string]GoNetGateway
 	config *GoNetConfig
 }
 
-func (ctx *GoNetCtx) Interfaces() []GoNetInterface {
+func (ctx *GoNetCtx) Interfaces() []GoNetGateway {
 	ctx.rwlock.RLock()
 	defer ctx.rwlock.RUnlock()
 
 	amnt := len(ctx.interfaces)
-	ret := make([]GoNetInterface, amnt)
+	ret := make([]GoNetGateway, amnt)
 
 	idx := 0
 	for _, val := range ctx.interfaces {
@@ -27,7 +27,7 @@ func (ctx *GoNetCtx) Interfaces() []GoNetInterface {
 	return ret
 }
 
-func (ctx *GoNetCtx) GetInterface(name string) (GoNetInterface, error) {
+func (ctx *GoNetCtx) GetInterface(name string) (GoNetGateway, error) {
 	ctx.rwlock.RLock()
 	defer ctx.rwlock.RUnlock()
 	
@@ -39,7 +39,7 @@ func (ctx *GoNetCtx) GetInterface(name string) (GoNetInterface, error) {
 	return iface, nil
 }
 
-func (ctx *GoNetCtx) AddInterface(iface GoNetInterface) error {
+func (ctx *GoNetCtx) AddInterface(iface GoNetGateway) error {
 	if iface == nil {
 		return errors.New("Attempted to add NIL interface")
 	}
@@ -75,7 +75,7 @@ func (ctx *GoNetCtx) Config() *GoNetConfig {
 func NewGoNetCtx(config *GoNetConfig) (*GoNetCtx) {
 	return &GoNetCtx{
 		rwlock: new(sync.RWMutex),
-		interfaces: make(map[string]GoNetInterface, 0),
+		interfaces: make(map[string]GoNetGateway, 0),
 		config: config,
 	}
 }

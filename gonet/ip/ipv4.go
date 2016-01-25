@@ -10,6 +10,16 @@ import (
 	"net"
 )
 
+type IPv4Gateway struct {
+	foo string
+}
+
+func NewIPv4Gateway() *IPv4Gateway {
+	return &IPv4Gateway{
+		foo: "foo",
+	}
+}
+
 type IPv4Header interface {
 	Version() uint8
 	IHL() uint8

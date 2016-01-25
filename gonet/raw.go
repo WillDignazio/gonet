@@ -10,13 +10,13 @@ import (
 )
 
 type RawSocketInterface struct {
-	GoNetInterface
+	GoNetGateway
 	sockout       int
 	sockets       []int
 	baseInterface net.Interface
 }
 
-func (iface *RawSocketInterface) GoNetInterfaceType() GoNetInterfaceType {
+func (iface *RawSocketInterface) GoNetGatewayType() GoNetGatewayType {
 	return RawSocket
 }
 
