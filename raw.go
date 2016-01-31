@@ -2,7 +2,7 @@ package gonet
 
 import (
 	"fmt"
-	"digitalbebop.net/gonet/ip"
+	"github.com/WillDignazio/gonet/ip"
 	"net"
 	"os"
 	"sync"
